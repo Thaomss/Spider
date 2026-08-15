@@ -49,3 +49,4 @@ footer{padding:24px;text-align:center;color:#555966;font-size:10px;letter-spacin
 .universe-label span{font-weight:800}.universe-label i{font-style:normal;color:#ef233c}.universe-label b{font-weight:600;color:#a1a1aa}
 .answer-result-stack{display:flex;flex-direction:column;gap:12px;align-items:center}.answer-result-stack p{margin:0}.answer-result-stack span{font-size:13px;color:#a1a1aa}.continue-facts{width:100%;margin-top:2px}
 @media(max-width:520px){.universe-label{font-size:9px;letter-spacing:.08em;padding:6px 9px;max-width:100%;white-space:normal}.answer-result-stack span{font-size:12px}.continue-facts{min-height:48px}}
+.send-error{margin:.8rem 0 0;text-align:center;font-size:.82rem;color:#aeb0b8}

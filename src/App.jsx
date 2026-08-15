@@ -8,6 +8,25 @@ const FINAL_QUESTION = "Quand t'en seras arrivée à Spider-Man, ça te dit qu'o
 const REVEAL_AFTER = 5;
 const asset = (name) => `${import.meta.env.BASE_URL}assets/${name}`;
 
+const SUPABASE_REST_URL = 'https://seuyhbyuuhclxcaoydgl.supabase.co/rest/v1';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_vgzy7PHvjVtwnlkwuYnlXg_VtE2q6X5';
+
+async function saveAnswer(response){
+  const res = await fetch(`${SUPABASE_REST_URL}/spider_response`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal'
+    },
+    body: JSON.stringify({ response })
+  });
+
+  if(!res.ok){
+    throw new Error(`Supabase ${res.status}`);
+  }
+}
+
 const SPECIAL_FACT = { id:'special-question', tag:'À PROPOS DE CE SITE', universe:'HORS-SÉRIE', title:"Tout ce site aurait pu être un simple message.", text:"Mais quitte à poser une question, autant faire beaucoup trop compliqué.", detail:"Voilà. C'était l'info inutilement importante du jour. Tu peux passer à la suite normalement." };
 
 function shuffle(list){ return [...list].sort(() => Math.random() - .5); }
@@ -29,6 +48,8 @@ export default function App(){
   const [alert,setAlert]=useState(false);
   const [invite,setInvite]=useState(false);
   const [answer,setAnswer]=useState(null);
+  const [sending,setSending]=useState(false);
+  const [sendError,setSendError]=useState(false);
   const [specialPassed,setSpecialPassed]=useState(false);
   const touch=useRef(null);
   const special = seen >= REVEAL_AFTER && !specialPassed;
@@ -51,6 +72,27 @@ export default function App(){
   const onTouchStart=e=>touch.current=e.touches[0].clientX;
   const onTouchEnd=e=>{if(touch.current==null)return; const d=e.changedTouches[0].clientX-touch.current; touch.current=null; if(d<-45)next(); else if(d>45)prev();};
 
+  const chooseAnswer=async(value)=>{
+    if(sending || answer) return;
+    setSending(true);
+    setSendError(false);
+    const response = value === 'yes' ? 'oui' : 'non';
+
+    for(let attempt=0; attempt<3; attempt+=1){
+      try{
+        await saveAnswer(response);
+        setAnswer(value);
+        setSending(false);
+        return;
+      }catch(error){
+        if(attempt < 2) await new Promise(resolve=>setTimeout(resolve,650));
+      }
+    }
+
+    setSending(false);
+    setSendError(true);
+  };
+
   if(!booted) return <ClickSpark><main className="boot-screen story-boot"><div className="halftone"/><motion.img src={asset('spider-hanging.png')} alt="Spider-Man suspendu" className="boot-spider" initial={{y:-45,opacity:0}} animate={{y:0,opacity:1}}/><motion.div className="boot-copy" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{delay:.2}}><div className="eyebrow">ARCHIVES DU RÉSEAU</div><h1>Traqueur Spider-Man</h1><p>Quelques infos Spider-Man tirées au hasard. Fais glisser, lis, recommence.</p><button className="primary-btn" onClick={()=>setBooted(true)}>Ouvrir les archives</button></motion.div></main></ClickSpark>;
 
   return <ClickSpark><main className="story-shell" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
@@ -70,6 +112,6 @@ export default function App(){
 
     <AnimatePresence>{alert&&!invite&&<motion.div className="center-alert-backdrop" initial={{opacity:0}} animate={{opacity:1}}><motion.div className="center-alert" initial={{scale:.72,opacity:0,y:25}} animate={{scale:1,opacity:1,y:0}} transition={{type:'spring',stiffness:280,damping:20}}><div className="alert-rings"><img src={asset('spider-badge.png')} alt=""/><i/><i/></div><div className="eyebrow">TOUT ÇA POUR ÇA</div><h2>Bon, j’aurais pu commencer par là.</h2><p>J’aurais pu simplement te demander ça autour d’une partie de mots fléchés, mais apparemment faire un site pendant 10h était plus logique.</p><button className="primary-btn" onClick={()=>{setAlert(false);setInvite(true)}}>Continuer</button></motion.div></motion.div>}</AnimatePresence>
 
-    <AnimatePresence>{invite&&<motion.div className="center-alert-backdrop" initial={{opacity:0}} animate={{opacity:1}}><motion.section className="invite-mobile" initial={{y:80,opacity:0}} animate={{y:0,opacity:1}}><div className="signal-scan"><span>ANALYSE TERMINÉE</span><strong>Correspondance trouvée</strong></div><div className="invite-data mobile-data"><div><span>SUJET</span><strong>Spider-Man</strong></div><div><span>LIEU PROBABLE</span><strong>Cinéma</strong></div><div><span>DATE</span><strong>Quand t'en seras là</strong></div></div><div className="final-question"><div className="eyebrow">BON. TOUT ÇA POUR ÇA.</div><h3>{FINAL_QUESTION}</h3>{!answer?<div className="answer-row"><button className="primary-btn" onClick={()=>setAnswer('yes')}>Oui</button><button className="secondary-btn" onClick={()=>setAnswer('no')}>Non</button></div>:<motion.div className="answer-result answer-result-stack" initial={{opacity:0,scale:.95}} animate={{opacity:1,scale:1}}><p>{answer==='yes'?"Bon bah ça valait le coup de faire un site entier finalement":"Ça marche, au moins t'auras appris des trucs sur Spider-Man"}</p><span>Il reste encore des anecdotes si t'as envie de continuer.</span><button className="secondary-btn continue-facts" onClick={()=>{setInvite(false);setAnswer(null);setSeen(s=>s+1);setIndex(i=>(i+1)%deck.length)}}>Continuer les anecdotes</button></motion.div>}</div></motion.section></motion.div>}</AnimatePresence>
+    <AnimatePresence>{invite&&<motion.div className="center-alert-backdrop" initial={{opacity:0}} animate={{opacity:1}}><motion.section className="invite-mobile" initial={{y:80,opacity:0}} animate={{y:0,opacity:1}}><div className="signal-scan"><span>ANALYSE TERMINÉE</span><strong>Correspondance trouvée</strong></div><div className="invite-data mobile-data"><div><span>SUJET</span><strong>Spider-Man</strong></div><div><span>LIEU PROBABLE</span><strong>Cinéma</strong></div><div><span>DATE</span><strong>Quand t'en seras là</strong></div></div><div className="final-question"><div className="eyebrow">BON. TOUT ÇA POUR ÇA.</div><h3>{FINAL_QUESTION}</h3>{!answer?<><div className="answer-row"><button className="primary-btn" disabled={sending} onClick={()=>chooseAnswer('yes')}>{sending?'...':'Oui'}</button><button className="secondary-btn" disabled={sending} onClick={()=>chooseAnswer('no')}>{sending?'...':'Non'}</button></div>{sendError&&<p className="send-error">Petit bug de connexion, retente juste une fois.</p>}</>:<motion.div className="answer-result answer-result-stack" initial={{opacity:0,scale:.95}} animate={{opacity:1,scale:1}}><p>{answer==='yes'?"Bon bah ça valait le coup de faire un site entier finalement":"Ça marche, au moins t'auras appris des trucs sur Spider-Man"}</p><span>Il reste encore des anecdotes si t'as envie de continuer.</span><button className="secondary-btn continue-facts" onClick={()=>{setInvite(false);setAnswer(null);setSeen(s=>s+1);setIndex(i=>(i+1)%deck.length)}}>Continuer les anecdotes</button></motion.div>}</div></motion.section></motion.div>}</AnimatePresence>
   </main></ClickSpark>;
 }
