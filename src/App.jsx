@@ -93,7 +93,7 @@ export default function App(){
     setSendError(true);
   };
 
-  if(!booted) return <ClickSpark><main className="boot-screen story-boot"><div className="halftone"/><motion.img src={asset('spider-hanging.png')} alt="Spider-Man suspendu" className="boot-spider" initial={{y:-45,opacity:0}} animate={{y:0,opacity:1}}/><motion.div className="boot-copy" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{delay:.2}}><div className="eyebrow">ARCHIVES DU RÉSEAU</div><h1>Traqueur Spider-Man</h1><p>Quelques infos Spider-Man tirées au hasard. Fais glisser, lis, recommence.</p><button className="primary-btn" onClick={()=>setBooted(true)}>Ouvrir les archives</button></motion.div></main></ClickSpark>;
+  if(!booted) return <ClickSpark><main className="boot-screen story-boot"><div className="halftone"/><motion.img src={asset('spider-hanging.png')} alt="Spider-Man suspendu" className="boot-spider" initial={{y:-45,opacity:0}} animate={{y:0,opacity:1}}/><motion.div className="boot-copy" initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{delay:.2}}><div className="eyebrow">ARCHIVES DU RÉSEAU</div><h1>Traqueur Spider-Man</h1><p>Des anecdotes plus ou moins utiles sur l’homme-araignée.</p><button className="primary-btn" onClick={()=>setBooted(true)}>Ouvrir les archives</button></motion.div></main></ClickSpark>;
 
   return <ClickSpark><main className="story-shell" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
     <div className="noise"/><header className="story-top"><div className="brand"><img src={asset('spider-badge.png')} alt="" className="brand-icon"/><div><span>ARCHIVES</span><strong>Spider-Man</strong></div></div><div className="online"><i/> ACTIF</div></header>
